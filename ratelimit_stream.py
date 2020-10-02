@@ -36,7 +36,7 @@ def construct_generic_limited_rows(row_generator_fx, rows_function, sleep_functi
         rows = row_generator_fx(rows_to_generate)
         # Sleep for g(i) seconds
         sleep_period = sleep_function(i)
-        print("Sleep: " + str(sleep_period))
+        # print("Sleep: " + str(sleep_period))
         sleep(sleep_period)
         # Increment for next generator iteration
         i = i + 1
