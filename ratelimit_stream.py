@@ -14,25 +14,15 @@ ONE_SEC = 1
 
 ############################################################
 # GENERIC FUNCTIONS - For utility use
+
+## Requirements
+# - row_generator_fx returns n rows when called with parameter n. Defaults to 1.
 ############################################################
-
-
-def construct_ratelimit_rows(row_generator_fx, max_rows_per_minute, blocking=True):
-    '''
-    Case 1:
-    - set a rate limit (min 1 per second)
-    - option to make function blocking
-
-    row_generator_fx releases 1 row per call (return, not yield)
-    '''
-    row_generator_fx = limits(calls=max_rows_per_minute, period=ONE_SEC)(row_generator_fx)
-    if blocking:
-        row_generator_fx = sleep_and_retry(row_generator_fx)
-    return row_generator_fx
 
 
 def construct_generic_limited_rows(row_generator_fx, rows_function, sleep_function):
     '''
+    Case 2: Generic function
     - row_generator_fx returns n rows when called with parameter n. Defaults to 1.
     - rows_function(i) returns the numbers of rows we should return in the i-th step
     - sleep_function(i) returns how long we should sleep in the i-th step
@@ -54,6 +44,22 @@ def construct_generic_limited_rows(row_generator_fx, rows_function, sleep_functi
         return rows
     return inner
 
+def file_row_generator(filename, num_rows):
+    '''
+    Compatible file generator that returns a certain number of rows each time
+    '''
+    from itertools import islice
+    fileobj = open(filename, "r")
+    data =  islice(fileobj, 0, num_rows)
+    def inner():
+        nonlocal fileobj
+        try:
+           return next(data)
+        except StopIteration:
+            return None
+
+        
+
 ############################################################
 # END GENERIC FUNCTIONS
 ############################################################
@@ -66,6 +72,21 @@ def construct_generic_limited_rows(row_generator_fx, rows_function, sleep_functi
 ## Requirements
 # - row_generator_fx returns n rows when called with parameter n. Defaults to 1.
 ############################################################
+
+
+def construct_ratelimit_rows(row_generator_fx, max_rows_per_minute, blocking=True):
+    '''
+    Case 1:
+    - set a rate limit (min 1 per second)
+    - option to make function blocking
+
+    row_generator_fx releases 1 row per call (return, not yield)
+    '''
+    row_generator_fx = limits(calls=max_rows_per_minute, period=ONE_SEC)(row_generator_fx)
+    if blocking:
+        row_generator_fx = sleep_and_retry(row_generator_fx)
+    return row_generator_fx
+
 
 def construct_randomsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
     '''
