@@ -93,7 +93,7 @@ def construct_randomsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
     Returns `rows` rows every uniformly random number of seconds
     '''
     rows_fx = lambda x: rows
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: random.uniform(min_sleep, max_sleep))
 
 def construct_randnormsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
@@ -106,7 +106,7 @@ def construct_randnormsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1)
     sd = (max_sleep - min_sleep) / 4
     def vague_normal():
         return min(max(random.gauss(mid_sleep, sd), 0), max_sleep)
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: vague_normal())
 
 def construct_randbetasleep_rows(row_generator_fx, min_sleep, max_sleep, alpha=1, beta=3, rows=1):
@@ -116,7 +116,7 @@ def construct_randbetasleep_rows(row_generator_fx, min_sleep, max_sleep, alpha=1
     rows_fx = lambda x: rows
     def beta_fx():
         return random.betavariate(alpha, beta) * max_sleep + min_sleep
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: beta_fx())
 
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     #limited_fx_generic = construct_generic_limited_rows(test_row_generator, one_fx, one_fx)
     # limited_fx_generic = construct_randomsleep_rows(test_row_generator, 0, 1)
     limited_fx_generic =  construct_randnormsleep_rows(test_row_generator, 0, 0.1)
-    # limited_fx_generic =  construct_randbetasleep_rows(test_row_generator, 0, 5, alpha=1, beta=10)
+    #limited_fx_generic = construct_randbetasleep_rows(test_row_generator, 0, 5, alpha=1, beta=10, rows=20)
     while True:
         print(limited_fx_generic())
 
