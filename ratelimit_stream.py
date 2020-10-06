@@ -7,8 +7,9 @@ Implement function call limiting for multiple scenario choices
 '''
 
 from ratelimit import limits, sleep_and_retry
-import random
 from time import sleep
+import random
+import numpy as np
 
 ONE_SEC = 1
 
@@ -119,6 +120,13 @@ def construct_randbetasleep_rows(row_generator_fx, min_sleep, max_sleep, alpha=1
     return construct_generic_limited_rows(test_row_generator, rows_fx,
                                           lambda x: beta_fx())
 
+def construct_sinusoidial_rows(row_generator_fx, amplitude, frequency, timestep):
+    '''
+    Generates a positive sine valued response of peak = 2 * amplitude and delta_T = timestep
+    '''
+    sleep_fx    = lambda x: timestep
+    rows_fx     = lambda x: int(amplitude + amplitude * np.sin((x * timestep) * (2 * np.pi * frequency)))
+    return construct_generic_limited_rows(row_generator_fx, rows_fx, sleep_fx)
 
 ############################################################
 # End Public interface
@@ -147,10 +155,11 @@ if __name__ == "__main__":
     # Testing generically limited function (one row per second)
     #limited_fx_generic = construct_generic_limited_rows(test_row_generator, one_fx, one_fx)
     # limited_fx_generic = construct_randomsleep_rows(test_row_generator, 0, 1)
-    limited_fx_generic =  construct_randnormsleep_rows(test_row_generator, 0, 0.1)
+    # limited_fx_generic = construct_randnormsleep_rows(test_row_generator, 0, 0.1)
+    sin_resp           = construct_sinusoidial_rows(test_row_generator, 100, 0.125, 1)
     # limited_fx_generic =  construct_randbetasleep_rows(test_row_generator, 0, 5, alpha=1, beta=10)
     while True:
-        print(limited_fx_generic())
+        print(sin_resp())
 
 
 
