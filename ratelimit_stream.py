@@ -42,7 +42,7 @@ def construct_generic_limited_rows(row_generator_fx, rows_function, sleep_functi
         # Increment for next generator iteration
         i = i + 1
         # Return data
-        return rows
+        yield rows
     return inner
 
 def file_row_generator(filename, num_rows):
@@ -124,7 +124,7 @@ def construct_sinusoidial_rows(row_generator_fx, amplitude, frequency, timestep)
     '''
     Generates a positive sine valued response of peak = 2 * amplitude and delta_T = timestep
     '''
-    sleep_fx    = lambda x: timestep
+    sleep_fx    = lambda x: 0
     rows_fx     = lambda x: int(amplitude + amplitude * np.sin((x * timestep) * (2 * np.pi * frequency)))
     return construct_generic_limited_rows(row_generator_fx, rows_fx, sleep_fx)
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     sin_resp           = construct_sinusoidial_rows(test_row_generator, 100, 0.125, 1)
     # limited_fx_generic =  construct_randbetasleep_rows(test_row_generator, 0, 5, alpha=1, beta=10)
     while True:
-        print(sin_resp())
+        print(next(sin_resp()))
 
 
 
