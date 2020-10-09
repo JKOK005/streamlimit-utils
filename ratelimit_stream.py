@@ -94,7 +94,7 @@ def construct_randomsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
     Returns `rows` rows every uniformly random number of seconds
     '''
     rows_fx = lambda x: rows
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: random.uniform(min_sleep, max_sleep))
 
 def construct_randnormsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
@@ -107,7 +107,7 @@ def construct_randnormsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1)
     sd = (max_sleep - min_sleep) / 4
     def vague_normal():
         return min(max(random.gauss(mid_sleep, sd), 0), max_sleep)
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: vague_normal())
 
 def construct_randbetasleep_rows(row_generator_fx, min_sleep, max_sleep, alpha=1, beta=3, rows=1):
@@ -117,7 +117,7 @@ def construct_randbetasleep_rows(row_generator_fx, min_sleep, max_sleep, alpha=1
     rows_fx = lambda x: rows
     def beta_fx():
         return random.betavariate(alpha, beta) * max_sleep + min_sleep
-    return construct_generic_limited_rows(test_row_generator, rows_fx,
+    return construct_generic_limited_rows(row_generator_fx, rows_fx,
                                           lambda x: beta_fx())
 
 def construct_sinusoidial_rows(row_generator_fx, amplitude, frequency, timestep):
@@ -186,6 +186,7 @@ if __name__ == "__main__":
 
     # Sinusoidal test - amplitude 50 frequency 1 ==> 50 samples per second. Timestep 0.5 = 
     limited_fx_generic = construct_sin_stream(test_row_generator, amplitude=10, frequency=1, timestep=0.25)
+
     while True:
         print(next(limited_fx_generic()))
 
