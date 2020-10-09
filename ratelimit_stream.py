@@ -139,7 +139,7 @@ def construct_sinusoidial_rows_integrated(row_generator_fx, amplitude, frequency
     sleep_fx    = lambda x: timestep
 
     def sin_integral(t):
-        # Integrate computed from: https://www.wolframalpha.com/input/?i=integrate+with+respect+to+t%2C+f%28t%29+%3D+A+%2B+A*sin%282+*+pi+*+f+*+t%29
+        # Integral computed from: https://www.wolframalpha.com/input/?i=integrate+with+respect+to+t%2C+f%28t%29+%3D+A+%2B+A*sin%282+*+pi+*+f+*+t%29
         # Amplitude, frequency, time
         A = amplitude
         f = frequency
