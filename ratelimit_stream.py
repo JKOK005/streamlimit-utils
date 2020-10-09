@@ -128,6 +128,32 @@ def construct_sinusoidial_rows(row_generator_fx, amplitude, frequency, timestep)
     rows_fx     = lambda x: int(amplitude + amplitude * np.sin((x * timestep) * (2 * np.pi * frequency)))
     return construct_generic_limited_rows(row_generator_fx, rows_fx, sleep_fx)
 
+def construct_sinusoidial_rows_integrated(row_generator_fx, amplitude, frequency, timestep=None):
+    '''
+    Generates a positive sine valued response of peak = 2 * amplitude and delta_T = timestep
+    Integrate between timesteps.
+    Timestep also defines how fast we call the function: smaller step = more calls
+    '''
+
+    # Sleep for timestep units
+    sleep_fx    = lambda x: timestep
+
+    def sin_integral(t):
+        # Integrate computed from: https://www.wolframalpha.com/input/?i=integrate+with+respect+to+t%2C+f%28t%29+%3D+A+%2B+A*sin%282+*+pi+*+f+*+t%29
+        # Amplitude, frequency, time
+        A = amplitude
+        f = frequency
+        return (A * t) - (A * np.cos(2 * np.pi * f * t)) / (2 * np.pi * f)
+        
+    def rows_fx(t):
+        # Integrate between timesteps
+        return int(sin_integral(t * timestep) - sin_integral((t-1) * timestep))
+        
+    return construct_generic_limited_rows(row_generator_fx, rows_fx, sleep_fx)
+
+# Shorthand alias
+construct_sin_stream = construct_sinusoidial_rows_integrated
+
 ############################################################
 # End Public interface
 ############################################################
@@ -155,11 +181,13 @@ if __name__ == "__main__":
     # Testing generically limited function (one row per second)
     #limited_fx_generic = construct_generic_limited_rows(test_row_generator, one_fx, one_fx)
     # limited_fx_generic = construct_randomsleep_rows(test_row_generator, 0, 1)
-    # limited_fx_generic = construct_randnormsleep_rows(test_row_generator, 0, 0.1)
-    sin_resp           = construct_sinusoidial_rows(test_row_generator, 100, 0.125, 1)
+    # limited_fx_generic = construct_randnormsleep_rows(test_row_generator, min_sleep=0, max_sleep=1, rows=1)
     # limited_fx_generic =  construct_randbetasleep_rows(test_row_generator, 0, 5, alpha=1, beta=10)
+
+    # Sinusoidal test - amplitude 50 frequency 1 ==> 50 samples per second. Timestep 0.5 = 
+    limited_fx_generic = construct_sin_stream(test_row_generator, amplitude=10, frequency=1, timestep=0.25)
     while True:
-        print(next(sin_resp()))
+        print(next(limited_fx_generic()))
 
 
 
