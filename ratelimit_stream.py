@@ -87,7 +87,7 @@ def construct_ratelimit_rows(row_generator_fx, max_rows_per_minute, blocking=Tru
     if blocking:
         row_generator_fx = sleep_and_retry(row_generator_fx)
     return row_generator_fx
-
+    
 
 def construct_randomsleep_rows(row_generator_fx, min_sleep, max_sleep, rows=1):
     '''
