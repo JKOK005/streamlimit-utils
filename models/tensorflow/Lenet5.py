@@ -1,5 +1,5 @@
 class Lenet5(object):
-	def get_model():
+	def get_model(self):
 		"""
 		Lenet5 expects 32 x 32 image size. 
 
