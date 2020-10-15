@@ -172,8 +172,8 @@ if __name__ == "__main__":
             SLA violated?: {4},
             """.format(
             end - start,
-            SLA,
             TRAINING_ROWS,
+            SLA,
             (end - start) / EPOCHS,
             (end - start) / EPOCHS > SLA,
         )
