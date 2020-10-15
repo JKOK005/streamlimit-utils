@@ -149,7 +149,7 @@ if __name__ == "__main__":
         """
             Execution time total: {0}s,
             Batch size: {1},
-            SLA: {1}s,
+            SLA: {2}s,
             Average batch time: {3}
             SLA violated?: {4},
             """.format(
