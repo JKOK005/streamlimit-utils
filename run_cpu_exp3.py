@@ -42,6 +42,12 @@ def train(train_data_generator, val_data_generator, epochs, num_threads=None) ->
     Trains model over training / validation data generators.
     We measure the average time taken to train & validate the model for each epoch
     """
+    if num_threads:
+        import tensorflow as tf
+
+        tf.config.threading.set_intra_op_parallelism_threads(num_threads)
+        tf.config.threading.set_inter_op_parallelism_threads(num_threads)
+
     import keras
 
     # class TimeHistory(keras.callbacks.Callback):
@@ -57,18 +63,6 @@ def train(train_data_generator, val_data_generator, epochs, num_threads=None) ->
     model = Lenet5().get_model()
     opt = keras.optimizers.Adadelta()
     model.compile(optimizer=opt, loss="mean_squared_error", metrics=["accuracy"])
-
-    if num_threads:
-        from keras import backend as K
-
-        K.set_session(
-            K.tf.Session(
-                config=K.tf.ConfigProto(
-                    intra_op_parallelism_threads=num_threads,
-                    inter_op_parallelism_threads=num_threads,
-                )
-            )
-        )
 
     # time_callback = TimeHistory()
     model.fit_generator(
