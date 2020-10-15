@@ -91,7 +91,7 @@ if __name__ == "__main__":
         help="Batch size on each generation",
     )
     parser.add_argument(
-        "sla", metavar="sla", type=int, nargs="?", help="SLA timing in seconds"
+        "sla", metavar="sla", type=float, nargs="?", help="SLA timing in seconds"
     )
     # parser.add_argument(
     #     "executors",
