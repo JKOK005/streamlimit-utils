@@ -7,6 +7,7 @@ from ratelimit_stream import construct_randomsleep_rows
 import argparse
 import numpy as np
 import time
+import tensorflow as tf
 
 
 def random_generator(data_shape, label_shape):
@@ -36,7 +37,7 @@ def fixed_generator_lenet(data_shape, label_shape):
     return yielder
 
 
-def train(train_data_generator, val_data_generator, epochs) -> int:
+def train(train_data_generator, val_data_generator, epochs, num_threads=None) -> int:
     """
     Trains model over training / validation data generators.
     We measure the average time taken to train & validate the model for each epoch
@@ -56,6 +57,18 @@ def train(train_data_generator, val_data_generator, epochs) -> int:
     model = Lenet5().get_model()
     opt = keras.optimizers.Adadelta()
     model.compile(optimizer=opt, loss="mean_squared_error", metrics=["accuracy"])
+
+    if num_threads:
+        from keras import backend as K
+
+        K.set_session(
+            K.tf.Session(
+                config=K.tf.ConfigProto(
+                    intra_op_parallelism_threads=num_threads,
+                    inter_op_parallelism_threads=num_threads,
+                )
+            )
+        )
 
     # time_callback = TimeHistory()
     model.fit_generator(
@@ -103,6 +116,13 @@ if __name__ == "__main__":
         nargs="?",
         help="Ratio of training data used for validation",
     )
+    parser.add_argument(
+        "num_threads",
+        metavar="nt",
+        type=int,
+        nargs="?",
+        help="Number of threads used for training",
+    )
     args = parser.parse_args()
 
     TRAINING_ROWS = args.training_rows
@@ -111,6 +131,7 @@ if __name__ == "__main__":
     # EXECUTORS = args.executors
     EPOCHS = args.epochs
     SLA = args.sla
+    NUM_THREADS = args.num_threads
 
     print(
         f"Training rows: {TRAINING_ROWS}, Validation rows: {VALIDATION_ROWS}, EPOCHS: {EPOCHS}"
@@ -137,8 +158,11 @@ if __name__ == "__main__":
     )
 
     start = time.time()
-    callback_data = train(
-        train_data_generator=train_gen, val_data_generator=val_gen, epochs=EPOCHS
+    train(
+        train_data_generator=train_gen,
+        val_data_generator=val_gen,
+        epochs=EPOCHS,
+        num_threads=NUM_THREADS,
     )
     # hr.run(
     #     train, train_data_generator=train_gen, val_data_generator=val_gen, epochs=EPOCHS
