@@ -83,5 +83,5 @@ if __name__ == "__main__":
 			""".format(	end - start, 
 						(end - start) / EPOCHS, 
 						TRAINING_ROWS * EXECUTORS),
-						SLA >= (end - start) / EPOCHS
+						(end - start) / EPOCHS >= SLA
 					)
