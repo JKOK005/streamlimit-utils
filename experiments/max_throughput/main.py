@@ -1,56 +1,6 @@
-from sparkdl import HorovodRunner
-from utils.ImageGenerator import *
-import argparse
-import logging
-import numpy as np
-import pandas as pd
-import random
-import time
-
-logging.getLogger().setLevel(logging.INFO)
-
-def train(training_rows, val_rows, epochs):
-    """
-    Trains model over training / validation data generators.
-    We measure the average time taken to train & validate the model for each epoch
-    """
-    from tensorflow.keras import backend as K
-    from tensorflow import keras
-    import horovod.tensorflow.keras as hvd
-	
-    hvd.init()
-    model 	          = Resnet().resnet50()
-    
-    train_imgs        = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
-    train_labels      = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
-    train_gen         = DataGenerator.generate(img_gen = training_imgs, label_gen = training_labels)
-
-    val_imgs          = ArrGenerator(img_size = np.array([val_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
-    val_labels        = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
-    val_gen           = DataGenerator.generate(img_gen = val_imgs, label_gen = val_labels)
-  
-    opt 	            = keras.optimizers.Adadelta()
-    opt 	            = hvd.DistributedOptimizer(opt)
-    
-    model.compile(optimizer = opt, loss = "mean_squared_error", metrics = ['accuracy'])
-    
-    # For training 
-    model.fit_generator(
-      generator        = train_gen,
-      steps_per_epoch  = 1,
-      epochs 		       = epochs,
-      validation_data  = val_gen,
-      validation_steps = 1,
-      max_queue_size   = 3,
-      workers		       = 3, 
-      use_multiprocessing = True,
-    )
-    
-    hvd.shutdown()
-    return
-
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description='Experiment 1: Max throughput for Spark on Horovod')
+  parser = argparse.ArgumentParser(description='Experiment 1: Max throughput')
+  parser.add_argument('--experiment-type', type=int, choices=[1,2,3], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
   parser.add_argument('--training_rows_min', type=int, nargs='?', default=1, help='Minimum batch size per epoch')
   parser.add_argument('--training_rows_max', type=int, nargs='?', default=8, help='Maximum batch size per epoch')
   parser.add_argument('--training_rows_inc', type=int, nargs='?', default=1, help='Batch size increment')
@@ -85,7 +35,7 @@ if __name__ == "__main__":
           try:
             print("Profiling for training rows: {0}, executors: {1}".format(TRAINING_ROWS, EXECUTORS))
             start = time.time()
-            hr.run(train, training_rows = TRAINING_ROWS, val_rows = VALIDATION_ROWS, epochs = EPOCHS)
+            hr.run(SparkHorovodTraining.train, training_rows = TRAINING_ROWS, val_rows = VALIDATION_ROWS, epochs = EPOCHS)
             end   = time.time()
             FAILURE_FLAG = False
           except Exception as ex:
