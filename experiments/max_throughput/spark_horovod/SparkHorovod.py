@@ -1,14 +1,7 @@
 from models.tensorflow.Lenet5 import Lenet5
 from sparkdl import HorovodRunner
-from utils.ImageGenerator import *
-import argparse
-import logging
+from stream_utils.ImageGenerator import *
 import numpy as np
-import pandas as pd
-import random
-import time
-
-logging.getLogger().setLevel(logging.INFO)
 
 class SparkHorovod(object):
   @classmethod
@@ -26,7 +19,7 @@ class SparkHorovod(object):
       
       train_imgs        = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
       train_labels      = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
-      train_gen         = DataGenerator.generate(img_gen = training_imgs, label_gen = training_labels)
+      train_gen         = DataGenerator.generate(img_gen = train_imgs, label_gen = train_labels)
 
       val_imgs          = ArrGenerator(img_size = np.array([val_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
       val_labels        = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
@@ -52,10 +45,12 @@ class SparkHorovod(object):
       hvd.shutdown()
       return
 
-    @classmethod
-    def stats(cls, )
+class SparkHorovodEntry():
+  @classmethod
+  def get_images_per_epoch(cls, **kwargs):
+    return kwargs["training_rows"] * kwargs["units"]
 
-    @classmethod
-    def main(cls, units, **kwargs):
-      hr = HorovodRunner(np = num_executors)
-      hr.run(cls.train, **kwargs)
+  @classmethod
+  def main(cls, units, **kwargs):
+    hr = HorovodRunner(np = units)
+    hr.run(SparkHorovod.train, **kwargs)

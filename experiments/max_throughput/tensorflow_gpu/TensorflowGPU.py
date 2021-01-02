@@ -1,18 +1,13 @@
 from models.tensorflow.Lenet5 import Lenet5
-from utils.ImageGenerator import *
-import argparse
-import logging
+from stream_utils.ImageGenerator import *
 import numpy as np
-import pandas as pd
-import random
 import tensorflow as tf
-import time
 
 class TensorflowGPU(object):
 	@classmethod
-	def train(cls, training_rows, val_rows, epochs, num_gpus):
+	def train(cls, num_gpus, training_rows, val_rows, epochs):
 		devices = tf.config.experimental.list_physical_devices('GPU')
-		devices_names = [d.name.split(“e:”)[1] for d in devices]
+		devices_names = [d.name.split("e:")[1] for d in devices]
 
 		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
 		train_labels = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
@@ -39,3 +34,11 @@ class TensorflowGPU(object):
 			workers		     = 3, 
 			use_multiprocessing = True,
 		)
+
+	@classmethod
+	def get_images_per_epoch(cls, **kwargs):
+		return kwargs["training_rows"]
+
+	@classmethod
+	def main(cls, units, **kwargs):
+		cls.train(num_gpus = units, **kwargs)
