@@ -9,8 +9,8 @@ import tensorflow as tf
 import time
 
 class TensorflowGPU(object):
-	@staticmethod
-	def train(training_rows, val_rows, epochs, num_gpus):
+	@classmethod
+	def train(cls, training_rows, val_rows, epochs, num_gpus):
 		devices = tf.config.experimental.list_physical_devices('GPU')
 		devices_names = [d.name.split(“e:”)[1] for d in devices]
 

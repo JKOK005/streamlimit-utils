@@ -1,12 +1,15 @@
+from experiments.max_throughput.spark_horovod import SparkHorovod
+from experiments.max_throughput.tensorflow_gpu import TensorflowGPU
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Experiment 1: Max throughput')
-  parser.add_argument('--experiment-type', type=int, choices=[1,2,3], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
+  parser.add_argument('--experiment_type', type=int, choices=[1,3], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
   parser.add_argument('--training_rows_min', type=int, nargs='?', default=1, help='Minimum batch size per epoch')
   parser.add_argument('--training_rows_max', type=int, nargs='?', default=8, help='Maximum batch size per epoch')
   parser.add_argument('--training_rows_inc', type=int, nargs='?', default=1, help='Batch size increment')
-  parser.add_argument('--executors_min', type=int, nargs='?', default=1, help='Minimum executors')
-  parser.add_argument('--executors_max', type=int, nargs='?', default=8, help='Maximum executors')
-  parser.add_argument('--executors_inc', type=int, nargs='?', default=1, help='Executors increment')
+  parser.add_argument('--machine_units_min', type=int, nargs='?', default=1, help='Minimum number of machine units')
+  parser.add_argument('--machine_units_max', type=int, nargs='?', default=8, help='Maximum number of machine units')
+  parser.add_argument('--machine_units_inc', type=int, nargs='?', default=1, help='Machine units increment')
   parser.add_argument('--validation_ratio', type=float, nargs='?', default=0.1, help='Ratio of training rows for validation')
   parser.add_argument('--epochs', type=int, nargs='?', default=1, help='Training epochs')
   parser.add_argument('--reps', type=int, nargs='?', default=1, help='Repetitions of experiment')
@@ -14,32 +17,37 @@ if __name__ == "__main__":
   logging.info("Training model on args: {0}".format(args))
 
   TRAINING_ROWS_RANGE = [i for i in range(args.training_rows_min, args.training_rows_max, args.training_rows_inc)]   # [i for i in range(35000,50000,500)]
-  EXECUTORS_RANGE     = [i for i in range(args.executors_min, args.executors_max, args.executors_inc)]   # [2**i for i in range(0, -1, -1)]
-  VALIDATION_RATIO    = args.validation_ratio
+  UNITS_RANGE         = [i for i in range(args.machine_units_min, args.machine_units_max, args.machine_units_inc)]   # [2**i for i in range(0, -1, -1)]
   EPOCHS              = args.epochs
+  EXPERIMENT_TYPE     = args.experiment_type
   REPETITIONS         = args.reps
+  VALIDATION_RATIO    = args.validation_ratio
   TIMESTAMP           = int(time.time())
   RESULTS             = []
 
+  training_cls        = None
+  if EXPERIMENT_TYPE == 1:
+    training_cls      = TensorflowGPU
+  elif EXPERIMENT_TYPE == 3:
+    training_cls      = SparkHorovod
+
   for _ in range(REPETITIONS):
-    for each_executors in EXECUTORS_RANGE:
+    for each_units in UNITS_RANGE:
       for each_training_rows in TRAINING_ROWS_RANGE:
         TRAINING_ROWS     = max(each_training_rows, 1)
         VALIDATION_ROWS   = max(int(VALIDATION_RATIO * TRAINING_ROWS), 1)
-        EXECUTORS         = each_executors
         FAILURE_FLAG      = True
-
-        hr = HorovodRunner(np = EXECUTORS)
+        params            = {"units" : each_units, "training_rows" : TRAINING_ROWS, "val_rows" : VALIDATION_ROWS, "epochs" : EPOCHS}
 
         while FAILURE_FLAG:
           try:
-            print("Profiling for training rows: {0}, executors: {1}".format(TRAINING_ROWS, EXECUTORS))
+            logging.info("Training instance: {0}".format(params))
             start = time.time()
-            hr.run(SparkHorovodTraining.train, training_rows = TRAINING_ROWS, val_rows = VALIDATION_ROWS, epochs = EPOCHS)
+            training_cls.main()
             end   = time.time()
             FAILURE_FLAG = False
           except Exception as ex:
-            print(ex)
+            logging.error("Training instance: {0}".format(params))
             FAILURE_FLAG = True
             time.sleep(10)
           

@@ -11,8 +11,8 @@ import time
 logging.getLogger().setLevel(logging.INFO)
 
 class SparkHorovod(object):
-  @staticmethod
-  def train(training_rows, val_rows, epochs):
+  @classmethod
+  def train(cls, training_rows, val_rows, epochs):
       """
       Trains model over training / validation data generators.
       We measure the average time taken to train & validate the model for each epoch
@@ -51,3 +51,11 @@ class SparkHorovod(object):
       
       hvd.shutdown()
       return
+
+    @classmethod
+    def stats(cls, )
+
+    @classmethod
+    def main(cls, units, **kwargs):
+      hr = HorovodRunner(np = num_executors)
+      hr.run(cls.train, **kwargs)
