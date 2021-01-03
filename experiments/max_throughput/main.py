@@ -62,8 +62,8 @@ if __name__ == "__main__":
             end   = time.time()
             FAILURE_FLAG = False
           except Exception as ex:
-            logging.error("Failed due to {1}".format(ex))
-            FAILURE_FLAG = True
+            logging.error("Failed due to {0}".format(ex))
+            FAILURE_FLAG = False
             time.sleep(SLEEP_INTERVAL)
           
         run_time = end - start

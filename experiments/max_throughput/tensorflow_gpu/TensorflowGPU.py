@@ -1,5 +1,6 @@
 from models.tensorflow.Lenet5 import Lenet5
 from stream_utils.ImageGenerator import *
+from tensorflow import keras
 import numpy as np
 import tensorflow as tf
 
@@ -11,7 +12,7 @@ class TensorflowGPU(object):
 
 		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
 		train_labels = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
-		train_gen    = DataGenerator.generate(img_gen = training_imgs, label_gen = training_labels)
+		train_gen    = DataGenerator.generate(img_gen = train_imgs, label_gen = train_labels)
 
 		val_imgs     = ArrGenerator(img_size = np.array([val_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
 		val_labels   = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
@@ -24,15 +25,15 @@ class TensorflowGPU(object):
 			opt = keras.optimizers.Adadelta()
 			model.compile(optimizer = opt, loss = "mean_squared_error", metrics = ['accuracy'])
 
-		model.fit_generator(
-			generator        = train_gen,
+		model.fit(
+			x 				 = train_gen,
 			steps_per_epoch  = 1,
 			epochs 		     = epochs,
 			validation_data  = val_gen,
 			validation_steps = 1,
 			max_queue_size   = 3,
 			workers		     = 3, 
-			use_multiprocessing = True,
+			use_multiprocessing = True
 		)
 
 	@classmethod
