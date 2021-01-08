@@ -1,10 +1,15 @@
 from models.tensorflow.Lenet5 import Lenet5
 from stream_utils.ImageGenerator import *
+from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
 import numpy as np
+import logging
 import tensorflow as tf
 
 class TensorflowGPU(object):
+	time_callback = TimedCallback()
+	logger = logging.getLogger()
+
 	@classmethod
 	def train(cls, num_gpus, training_rows, val_rows, epochs):
 		devices = tf.config.experimental.list_physical_devices('GPU')
@@ -33,12 +38,19 @@ class TensorflowGPU(object):
 			validation_steps = 1,
 			max_queue_size   = 3,
 			workers		     = 3, 
-			use_multiprocessing = True
+			use_multiprocessing = True,
+			callbacks 		 = [cls.time_callback]
 		)
 
 	@classmethod
 	def get_images_per_epoch(cls, **kwargs):
 		return kwargs["training_rows"]
+
+	@classmethod
+	def get_avg_epoch_timing(cls, **kwargs):
+		epoch_timings = cls.time_callback.get_epoch_times()
+		cls.logger.info("Epoch timings {0}".format(epoch_timings))
+		return np.average(epoch_timings)
 
 	@classmethod
 	def main(cls, units, **kwargs):
