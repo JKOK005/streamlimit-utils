@@ -2,16 +2,28 @@ from models.tensorflow.Lenet5 import Lenet5
 from stream_utils.ImageGenerator import *
 from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
-import numpy as np
+import gc
 import logging
+import numpy as np
 import tensorflow as tf
+import tensorflow.python.keras.backend as K
 
 class TensorflowGPU(object):
 	time_callback = TimedCallback()
 	logger = logging.getLogger()
 
 	@classmethod
-	def train(cls, num_gpus, training_rows, val_rows, epochs):
+	def clear_all(cls):
+		""" Release unused memory resources. Force garbage collection """
+		K.clear_session()
+		K.get_session().close()
+		tf.compat.v1.reset_default_graph()
+		gc.collect()
+		K.set_session(tf.compat.v1.Session())
+		gc.collect()
+
+	@classmethod
+	def train(cls, num_gpus, training_rows, val_rows, epochs, gen_workers):
 		devices = tf.config.experimental.list_physical_devices('GPU')
 		devices_names = [d.name.split("e:")[1] for d in devices]
 
@@ -36,15 +48,15 @@ class TensorflowGPU(object):
 			epochs 		     = epochs,
 			validation_data  = val_gen,
 			validation_steps = 1,
-			max_queue_size   = 3,
-			workers		     = 3, 
+			max_queue_size   = 20,
+			workers		     = gen_workers, 
 			use_multiprocessing = True,
 			callbacks 		 = [cls.time_callback]
 		)
 
 	@classmethod
 	def get_images_per_epoch(cls, **kwargs):
-		return kwargs["training_rows"]
+		return kwargs["training_rows"] + kwargs["val_rows"]
 
 	@classmethod
 	def get_avg_epoch_timing(cls, **kwargs):
@@ -55,3 +67,4 @@ class TensorflowGPU(object):
 	@classmethod
 	def main(cls, units, **kwargs):
 		cls.train(num_gpus = units, **kwargs)
+		cls.clear_all()

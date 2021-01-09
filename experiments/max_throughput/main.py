@@ -18,6 +18,7 @@ if __name__ == "__main__":
   parser.add_argument('--machine_units_max', type=int, nargs='?', default=8, help='Maximum number of machine units')
   parser.add_argument('--machine_units_inc', type=int, nargs='?', default=1, help='Machine units increment')
   parser.add_argument('--validation_ratio', type=float, nargs='?', default=0.1, help='Ratio of training rows for validation')
+  parser.add_argument('--generator_workers', type=int, nargs='?', default=1, help='Workers for generating images')
   parser.add_argument('--epochs', type=int, nargs='?', default=1, help='Training epochs')
   parser.add_argument('--reps', type=int, nargs='?', default=1, help='Repetitions of experiment')
   parser.add_argument('--sleep_interval', type=int, nargs='?', default=10, help='Interval between runs')
@@ -33,6 +34,7 @@ if __name__ == "__main__":
   VALIDATION_RATIO    = args.validation_ratio
   OUT_DIR             = args.out_dir
   SLEEP_INTERVAL      = args.sleep_interval
+  GEN_WORKERS         = args.generator_workers
 
   TIMESTAMP           = int(time.time())
   RESULTS             = []
@@ -53,7 +55,7 @@ if __name__ == "__main__":
         TRAINING_ROWS     = max(int((1 -VALIDATION_RATIO) * each_training_rows), 1)
         VALIDATION_ROWS   = max(int(VALIDATION_RATIO * each_training_rows), 1)
         FAILURE_FLAG      = True
-        params            = {"units" : each_units, "training_rows" : TRAINING_ROWS, "val_rows" : VALIDATION_ROWS, "epochs" : EPOCHS}
+        params            = {"units" : each_units, "training_rows" : TRAINING_ROWS, "val_rows" : VALIDATION_ROWS, "epochs" : EPOCHS, "gen_workers" : GEN_WORKERS}
 
         while FAILURE_FLAG:
           try:

@@ -48,7 +48,7 @@ class SparkHorovod(object):
 class SparkHorovodEntry():
   @classmethod
   def get_images_per_epoch(cls, **kwargs):
-    return kwargs["training_rows"] * kwargs["units"]
+    return (kwargs["training_rows"] + kwargs["val_rows"]) * kwargs["units"]
 
   @classmethod
   def main(cls, units, **kwargs):
