@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 from models.tensorflow.Lenet5 import Lenet5
 from ratelimit_stream import construct_randomsleep_rows
 from utils.TimedCallback import TimedCallback
-
+from utils.ImageGenerator import *
 # from sparkdl import HorovodRunner
 import argparse
 import numpy as np
@@ -63,7 +61,8 @@ def train(train_data_generator, val_data_generator, epochs, num_threads=None) ->
 
     model = Lenet5().get_model()
     opt = keras.optimizers.Adadelta()
-    model.compile(optimizer=opt, loss="mean_squared_error", metrics=["accuracy"])
+    model.compile(optimizer=opt, loss="mean_squared_error",
+                  metrics=["accuracy"])
 
     time_callback = TimedCallback()
 
@@ -87,7 +86,7 @@ if __name__ == "__main__":
         description="Experiment 3 - Max throughput on scaling machine unit"
     )
     parser.add_argument(
-        "training_rows",
+        "batch_size",
         metavar="tr",
         type=int,
         nargs="?",
@@ -122,9 +121,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    TRAINING_ROWS = args.training_rows
     VALIDATION_RATIO = args.validation_ratio
-    VALIDATION_ROWS = int(VALIDATION_RATIO * TRAINING_ROWS)
+    VALIDATION_ROWS = int(VALIDATION_RATIO * args.batch_size)
+    TRAINING_ROWS = args.batch_size - VALIDATION_ROWS
     # EXECUTORS = args.executors
     EPOCHS = args.epochs
     SLA = args.sla
