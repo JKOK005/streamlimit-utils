@@ -1,2 +1,2 @@
 # parameters: training rows, sla, epochs, validation ratio, num_threads
-python3 ./run_cpu_exp3.py 1000 1 10 0.3 8
+python3 ./Runner.py 8000 1 100 0.1 12
