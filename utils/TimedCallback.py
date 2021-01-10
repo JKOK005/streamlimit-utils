@@ -14,4 +14,5 @@ class TimedCallback(tf.keras.callbacks.Callback):
     
     def on_epoch_end(self, epoch, logs=None):
         epoch_running_time = tf.timestamp() - self.epoch_start_times[epoch]
+        print(epoch_running_time)
         self.epoch_running_times.append(epoch_running_time)
