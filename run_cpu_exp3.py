@@ -2,6 +2,7 @@
 
 from models.tensorflow.Lenet5 import Lenet5
 from ratelimit_stream import construct_randomsleep_rows
+from utils.TimedCallback import TimedCallback
 
 # from sparkdl import HorovodRunner
 import argparse
@@ -64,6 +65,8 @@ def train(train_data_generator, val_data_generator, epochs, num_threads=None) ->
     opt = keras.optimizers.Adadelta()
     model.compile(optimizer=opt, loss="mean_squared_error", metrics=["accuracy"])
 
+    time_callback = TimedCallback()
+
     # time_callback = TimeHistory()
     model.fit_generator(
         generator=train_data_generator(),
@@ -71,12 +74,12 @@ def train(train_data_generator, val_data_generator, epochs, num_threads=None) ->
         epochs=epochs,
         validation_data=val_data_generator(),
         validation_steps=1,
-        # callbacks=[time_callback]
+        callbacks=[time_callback]
         # max_queue_size=3,
         # workers=3,
         # use_multiprocessing=True,
     )
-    # return time_callback
+    return time_callback.get_avg_epoch_running_time()
 
 
 if __name__ == "__main__":
@@ -152,7 +155,7 @@ if __name__ == "__main__":
     )
 
     start = time.time()
-    train(
+    average_epoch_running_time = train(
         train_data_generator=train_gen,
         val_data_generator=val_gen,
         epochs=EPOCHS,
@@ -170,11 +173,13 @@ if __name__ == "__main__":
             SLA: {2}s,
             Average batch time: {3}
             SLA violated?: {4},
+            Average epoch time: {5}
             """.format(
             end - start,
             TRAINING_ROWS,
             SLA,
             (end - start) / EPOCHS,
             (end - start) / EPOCHS > SLA,
+            average_epoch_running_time
         )
     )
