@@ -23,7 +23,7 @@ class TensorflowGPU(object):
 		gc.collect()
 
 	@classmethod
-	def train(cls, num_gpus, training_rows, val_rows, epochs, gen_workers):
+	def train(cls, num_gpus, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
 		devices = tf.config.experimental.list_physical_devices('GPU')
 		devices_names = [d.name.split("e:")[1] for d in devices]
 
@@ -44,10 +44,10 @@ class TensorflowGPU(object):
 
 		model.fit(
 			x 				 = train_gen,
-			steps_per_epoch  = 1,
+			steps_per_epoch  = training_steps_per_epoch,
 			epochs 		     = epochs,
 			validation_data  = val_gen,
-			validation_steps = 1,
+			validation_steps = val_steps_per_epoch,
 			max_queue_size   = 20,
 			workers		     = gen_workers, 
 			use_multiprocessing = True,
@@ -56,7 +56,7 @@ class TensorflowGPU(object):
 
 	@classmethod
 	def get_images_per_epoch(cls, **kwargs):
-		return kwargs["training_rows"] + kwargs["val_rows"]
+		return (kwargs["training_rows"] * kwargs["training_steps_per_epoch"]) + (kwargs["val_rows"] * kwargs["val_steps_per_epoch"])
 
 	@classmethod
 	def get_avg_epoch_timing(cls, **kwargs):

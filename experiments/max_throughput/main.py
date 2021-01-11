@@ -2,6 +2,7 @@ from experiments.max_throughput.spark_horovod.SparkHorovod import *
 from experiments.max_throughput.tensorflow_gpu.TensorflowGPU import *
 import argparse
 import logging
+import math
 import os
 import pandas as pd
 import time
@@ -11,9 +12,10 @@ logging.getLogger().setLevel(logging.INFO)
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Experiment 1: Max throughput')
   parser.add_argument('--experiment_type', type=int, choices=[1], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
-  parser.add_argument('--training_rows_min', type=int, nargs='?', default=1, help='Minimum batch size per epoch')
-  parser.add_argument('--training_rows_max', type=int, nargs='?', default=8, help='Maximum batch size per epoch')
-  parser.add_argument('--training_rows_inc', type=int, nargs='?', default=1, help='Batch size increment')
+  parser.add_argument('--training_rows_min', type=int, nargs='?', default=1, help='Minimum data size per epoch')
+  parser.add_argument('--training_rows_max', type=int, nargs='?', default=8, help='Maximum data size per epoch')
+  parser.add_argument('--training_rows_inc', type=int, nargs='?', default=1, help='Data size increment')
+  parser.add_argument('--batch_size', type=int, nargs='?', default=4096, help='Batch size for each training')
   parser.add_argument('--machine_units_min', type=int, nargs='?', default=1, help='Minimum number of machine units')
   parser.add_argument('--machine_units_max', type=int, nargs='?', default=8, help='Maximum number of machine units')
   parser.add_argument('--machine_units_inc', type=int, nargs='?', default=1, help='Machine units increment')
@@ -28,6 +30,7 @@ if __name__ == "__main__":
 
   TRAINING_ROWS_RANGE = [i for i in range(args.training_rows_min, args.training_rows_max, args.training_rows_inc)]   # [i for i in range(35000,50000,500)]
   UNITS_RANGE         = [i for i in range(args.machine_units_min, args.machine_units_max, args.machine_units_inc)]   # [2**i for i in range(0, -1, -1)]
+  BATCH_SIZE          = args.batch_size
   EPOCHS              = args.epochs
   EXPERIMENT_TYPE     = args.experiment_type
   REPETITIONS         = args.reps
@@ -54,8 +57,12 @@ if __name__ == "__main__":
       for each_training_rows in TRAINING_ROWS_RANGE:
         TRAINING_ROWS     = max(int((1 -VALIDATION_RATIO) * each_training_rows), 1)
         VALIDATION_ROWS   = max(int(VALIDATION_RATIO * each_training_rows), 1)
+        training_steps_per_epoch    = math.ceil(TRAINING_ROWS / BATCH_SIZE)
+        val_steps_per_epoch         = math.ceil(VALIDATION_ROWS / BATCH_SIZE)
         FAILURE_FLAG      = True
-        params            = {"units" : each_units, "training_rows" : TRAINING_ROWS, "val_rows" : VALIDATION_ROWS, "epochs" : EPOCHS, "gen_workers" : GEN_WORKERS}
+        params            = { "units" : each_units, "training_rows" : BATCH_SIZE, "training_steps_per_epoch" : training_steps_per_epoch, 
+                              "val_rows" : VALIDATION_ROWS, "training_steps_per_epoch" : val_steps_per_epoch, "epochs" : EPOCHS, 
+                              "gen_workers" : GEN_WORKERS}
 
         while FAILURE_FLAG:
           try:
