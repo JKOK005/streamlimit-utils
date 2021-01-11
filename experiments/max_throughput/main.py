@@ -12,10 +12,10 @@ logging.getLogger().setLevel(logging.INFO)
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Experiment 1: Max throughput')
   parser.add_argument('--experiment_type', type=int, choices=[1], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
-  parser.add_argument('--training_rows_min', type=int, nargs='?', default=1, help='Minimum data size per epoch')
-  parser.add_argument('--training_rows_max', type=int, nargs='?', default=8, help='Maximum data size per epoch')
-  parser.add_argument('--training_rows_inc', type=int, nargs='?', default=1, help='Data size increment')
-  parser.add_argument('--batch_size', type=int, nargs='?', default=4096, help='Batch size for each training')
+  parser.add_argument('--rows_min', type=int, nargs='?', default=1, help='Minimum data size per epoch')
+  parser.add_argument('--rows_max', type=int, nargs='?', default=8, help='Maximum data size per epoch')
+  parser.add_argument('--rows_inc', type=int, nargs='?', default=1, help='Data size increment')
+  parser.add_argument('--steps_per_epoch', type=int, nargs='?', default=4096, help='Steps per epoch')
   parser.add_argument('--machine_units_min', type=int, nargs='?', default=1, help='Minimum number of machine units')
   parser.add_argument('--machine_units_max', type=int, nargs='?', default=8, help='Maximum number of machine units')
   parser.add_argument('--machine_units_inc', type=int, nargs='?', default=1, help='Machine units increment')
@@ -28,9 +28,9 @@ if __name__ == "__main__":
   args = parser.parse_args()
   logging.info("Training model on args: {0}".format(args))
 
-  TRAINING_ROWS_RANGE = [i for i in range(args.training_rows_min, args.training_rows_max, args.training_rows_inc)]   # [i for i in range(35000,50000,500)]
+  ROWS_RANGE          = [i for i in range(args.rows_min, args.rows_max, args.rows_inc)]   # [i for i in range(35000,50000,500)]
   UNITS_RANGE         = [i for i in range(args.machine_units_min, args.machine_units_max, args.machine_units_inc)]   # [2**i for i in range(0, -1, -1)]
-  BATCH_SIZE          = args.batch_size
+  STEPS_PER_EPOCH     = args.steps_per_epoch
   EPOCHS              = args.epochs
   EXPERIMENT_TYPE     = args.experiment_type
   REPETITIONS         = args.reps
@@ -54,14 +54,12 @@ if __name__ == "__main__":
 
   for _ in range(REPETITIONS):
     for each_units in UNITS_RANGE:
-      for each_training_rows in TRAINING_ROWS_RANGE:
-        TRAINING_ROWS     = max(int((1 -VALIDATION_RATIO) * each_training_rows), 1)
-        VALIDATION_ROWS   = max(int(VALIDATION_RATIO * each_training_rows), 1)
-        training_steps_per_epoch    = math.ceil(TRAINING_ROWS / BATCH_SIZE)
-        val_steps_per_epoch         = math.ceil(VALIDATION_ROWS / BATCH_SIZE)
+      for each_rows in ROWS_RANGE:
+        TRAINING_ROWS               = max(int((1 -VALIDATION_RATIO) * each_rows), 1)
+        VALIDATION_ROWS             = max(int(VALIDATION_RATIO * each_rows), 1)
         FAILURE_FLAG      = True
-        params            = { "units" : each_units, "training_rows" : BATCH_SIZE, "training_steps_per_epoch" : training_steps_per_epoch, 
-                              "val_rows" : VALIDATION_ROWS, "training_steps_per_epoch" : val_steps_per_epoch, "epochs" : EPOCHS, 
+        params            = { "units" : each_units, "training_rows" : TRAINING_ROWS, "training_steps_per_epoch" : STEPS_PER_EPOCH, 
+                              "val_rows" : VALIDATION_ROWS, "val_steps_per_epoch" : STEPS_PER_EPOCH, "epochs" : EPOCHS, 
                               "gen_workers" : GEN_WORKERS}
 
         while FAILURE_FLAG:
