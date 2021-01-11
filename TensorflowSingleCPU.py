@@ -13,6 +13,9 @@ class TensorflowSingleCPU(object):
 
     @classmethod
     def train(cls, num_thread, num_training, num_validation, num_epoch):
+        cls.time_callback.epoch_running_times.clear()
+        cls.time_callback.epoch_start_times.clear()
+        
         # device setup
         tf.config.threading.set_intra_op_parallelism_threads(num_thread)
         tf.config.threading.set_inter_op_parallelism_threads(num_thread)
