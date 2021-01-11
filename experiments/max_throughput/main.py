@@ -15,7 +15,9 @@ if __name__ == "__main__":
   parser.add_argument('--rows_min', type=int, nargs='?', default=1, help='Minimum data size per epoch')
   parser.add_argument('--rows_max', type=int, nargs='?', default=8, help='Maximum data size per epoch')
   parser.add_argument('--rows_inc', type=int, nargs='?', default=1, help='Data size increment')
-  parser.add_argument('--steps_per_epoch', type=int, nargs='?', default=4096, help='Steps per epoch')
+  parser.add_argument('--steps_per_epoch_min', type=int, nargs='?', default=1, help='Minimum steps per epoch')
+  parser.add_argument('--steps_per_epoch_max', type=int, nargs='?', default=8, help='Maximum steps per epoch')
+  parser.add_argument('--steps_per_epoch_inc', type=int, nargs='?', default=1, help='Steps per epoch increment')
   parser.add_argument('--machine_units_min', type=int, nargs='?', default=1, help='Minimum number of machine units')
   parser.add_argument('--machine_units_max', type=int, nargs='?', default=8, help='Maximum number of machine units')
   parser.add_argument('--machine_units_inc', type=int, nargs='?', default=1, help='Machine units increment')
@@ -28,16 +30,16 @@ if __name__ == "__main__":
   args = parser.parse_args()
   logging.info("Training model on args: {0}".format(args))
 
-  ROWS_RANGE          = [i for i in range(args.rows_min, args.rows_max, args.rows_inc)]   # [i for i in range(35000,50000,500)]
-  UNITS_RANGE         = [i for i in range(args.machine_units_min, args.machine_units_max, args.machine_units_inc)]   # [2**i for i in range(0, -1, -1)]
-  STEPS_PER_EPOCH     = args.steps_per_epoch
-  EPOCHS              = args.epochs
-  EXPERIMENT_TYPE     = args.experiment_type
-  REPETITIONS         = args.reps
-  VALIDATION_RATIO    = args.validation_ratio
-  OUT_DIR             = args.out_dir
-  SLEEP_INTERVAL      = args.sleep_interval
-  GEN_WORKERS         = args.generator_workers
+  ROWS_RANGE            = [i for i in range(args.rows_min, args.rows_max, args.rows_inc)]   # [i for i in range(35000,50000,500)]
+  UNITS_RANGE           = [i for i in range(args.machine_units_min, args.machine_units_max, args.machine_units_inc)]   # [2**i for i in range(0, -1, -1)]
+  STEPS_PER_EPOCH_RANGE = [i for i in range(args.steps_per_epoch_min, args.steps_per_epoch_max, args.steps_per_epoch_inc)]
+  EPOCHS                = args.epochs
+  EXPERIMENT_TYPE       = args.experiment_type
+  REPETITIONS           = args.reps
+  VALIDATION_RATIO      = args.validation_ratio
+  OUT_DIR               = args.out_dir
+  SLEEP_INTERVAL        = args.sleep_interval
+  GEN_WORKERS           = args.generator_workers
 
   TIMESTAMP           = int(time.time())
   RESULTS             = []
@@ -55,35 +57,36 @@ if __name__ == "__main__":
   for _ in range(REPETITIONS):
     for each_units in UNITS_RANGE:
       for each_rows in ROWS_RANGE:
-        TRAINING_ROWS               = max(int((1 -VALIDATION_RATIO) * each_rows), 1)
-        VALIDATION_ROWS             = max(int(VALIDATION_RATIO * each_rows), 1)
-        FAILURE_FLAG      = True
-        params            = { "units" : each_units, "training_rows" : TRAINING_ROWS, "training_steps_per_epoch" : STEPS_PER_EPOCH, 
-                              "val_rows" : VALIDATION_ROWS, "val_steps_per_epoch" : STEPS_PER_EPOCH, "epochs" : EPOCHS, 
-                              "gen_workers" : GEN_WORKERS}
+        for each_steps_per_epoch in STEPS_PER_EPOCH_RANGE:
+          TRAINING_ROWS               = max(int((1 -VALIDATION_RATIO) * each_rows), 1)
+          VALIDATION_ROWS             = max(int(VALIDATION_RATIO * each_rows), 1)
+          FAILURE_FLAG      = True
+          params            = { "units" : each_units, "training_rows" : TRAINING_ROWS, "training_steps_per_epoch" : each_steps_per_epoch, 
+                                "val_rows" : VALIDATION_ROWS, "val_steps_per_epoch" : each_steps_per_epoch, "epochs" : EPOCHS, 
+                                "gen_workers" : GEN_WORKERS}
 
-        while FAILURE_FLAG:
-          try:
-            logging.info("Training instance: {0}".format(params))
-            training_cls.main(**params)
-            FAILURE_FLAG = False
-          except Exception as ex:
-            logging.error("Failed due to {0}".format(ex))
-            FAILURE_FLAG = False
-            time.sleep(SLEEP_INTERVAL)
-          
-        per_epoch_time = training_cls.get_avg_epoch_timing()
-        per_epoch_imgs = training_cls.get_images_per_epoch(**params)
+          while FAILURE_FLAG:
+            try:
+              logging.info("Training instance: {0}".format(params))
+              training_cls.main(**params)
+              FAILURE_FLAG = False
+            except Exception as ex:
+              logging.error("Failed due to {0}".format(ex))
+              FAILURE_FLAG = False
+              time.sleep(SLEEP_INTERVAL)
+            
+          per_epoch_time = training_cls.get_avg_epoch_timing()
+          per_epoch_imgs = training_cls.get_images_per_epoch(**params)
 
-        RESULTS.append((each_units, per_epoch_time, per_epoch_imgs))
-        logging.info("""
-                SLA: {0}s, 
-                Batch size: {1}
-          """.format(per_epoch_time, per_epoch_imgs)
-        )
+          RESULTS.append((each_units, per_epoch_time, per_epoch_imgs))
+          logging.info("""
+                  SLA: {0}s, 
+                  Batch size: {1}
+            """.format(per_epoch_time, per_epoch_imgs)
+          )
 
-        df = pd.DataFrame(RESULTS, columns = ["machine_units", "per_epoch_time", "images_per_epoch"])
-        df.to_csv(os.path.join(OUT_DIR, "results_{0}.csv".format(TIMESTAMP)), index = False)
-        time.sleep(SLEEP_INTERVAL)
+          df = pd.DataFrame(RESULTS, columns = ["machine_units", "per_epoch_time", "images_per_epoch"])
+          df.to_csv(os.path.join(OUT_DIR, "results_{0}.csv".format(TIMESTAMP)), index = False)
+          time.sleep(SLEEP_INTERVAL)
 
   logging.info(RESULTS)
