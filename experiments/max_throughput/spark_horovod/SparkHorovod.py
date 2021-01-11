@@ -1,11 +1,16 @@
 from models.tensorflow.Lenet5 import Lenet5
 from sparkdl import HorovodRunner
 from stream_utils.ImageGenerator import *
+from stream_utils.TimedCallback import TimedCallback
+import logging
 import numpy as np
 
 class SparkHorovod(object):
+  time_callback = TimedCallback()
+  logger = logging.getLogger()
+
   @classmethod
-  def train(cls, training_rows, val_rows, epochs):
+  def train(cls, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
       """
       Trains model over training / validation data generators.
       We measure the average time taken to train & validate the model for each epoch
@@ -33,13 +38,14 @@ class SparkHorovod(object):
       # For training 
       model.fit_generator(
         generator        = train_gen,
-        steps_per_epoch  = 1,
+        steps_per_epoch  = training_steps_per_epoch,
         epochs 		       = epochs,
         validation_data  = val_gen,
-        validation_steps = 1,
-        max_queue_size   = 3,
-        workers		       = 3, 
+        validation_steps = val_steps_per_epoch,
+        max_queue_size   = 20,
+        workers		       = gen_workers, 
         use_multiprocessing = True,
+        callbacks        = [cls.time_callback]
       )
       
       hvd.shutdown()
@@ -48,7 +54,7 @@ class SparkHorovod(object):
 class SparkHorovodEntry():
   @classmethod
   def get_images_per_epoch(cls, **kwargs):
-    return (kwargs["training_rows"] + kwargs["val_rows"]) * kwargs["units"]
+    return ((kwargs["training_rows"] * kwargs["training_steps_per_epoch"]) + (kwargs["val_rows"] * kwargs["val_steps_per_epoch"])) * kwargs["units"]
 
   @classmethod
   def main(cls, units, **kwargs):
