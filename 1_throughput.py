@@ -3,14 +3,14 @@ import csv
 
 slas = [1, 5, 10, 20]
 cores = [1, 2, 4, 8, 16, 32, 64]
-batch_start = [2200, 2200, 3500, 6000, 9000, 15000, 17000]
+batch_start = [2200, 2500, 4000, 6500, 9500, 16000, 18000]
 RATIO = 0.1
 EPOCH = 100
 
 results_file = open("results", "w")
 write = csv.writer(results_file)
 
-for i in range(len(cores)):
+for i in range(len(cores[1:])+1):
     for sla in slas:
         core = cores[i]
         print(core, sla)
@@ -31,6 +31,6 @@ for i in range(len(cores)):
             else:
                 violation_counter = 0
             
-            if violation_counter > 3:
+            if violation_counter > 1:
                 next_exp = True
             current_batch += increment
