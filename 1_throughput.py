@@ -10,9 +10,9 @@ EPOCH = 100
 results_file = open("results", "w")
 write = csv.writer(results_file)
 
-for i in range(len(cores[1:])+1):
+for i in range(len(cores[1:])):
     for sla in slas:
-        core = cores[i]
+        core = cores[i+1]
         print(core, sla)
         batch_size_for_one_sec = batch_start[i]
         current_batch = batch_size_for_one_sec * sla
