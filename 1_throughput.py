@@ -3,7 +3,7 @@ import csv
 
 slas = [1, 5, 10, 20]
 cores = [1, 2, 4, 8, 16, 32, 64]
-batch_start = [2200, 2500, 4000, 6500, 9500, 16000, 18000]
+batch_start = [2200, 2200, 4000, 6500, 10000, 16000, 18000]
 RATIO = 0.1
 EPOCH = 100
 
@@ -31,7 +31,7 @@ for sla in slas:
         else:
             violation_counter = 0
         
-        if violation_counter > 1:
+        if violation_counter > 0:
             next_exp = True
         current_batch += increment
 
