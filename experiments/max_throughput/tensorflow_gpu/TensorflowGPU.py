@@ -6,7 +6,6 @@ import gc
 import logging
 import numpy as np
 import tensorflow as tf
-import tensorflow.python.keras.backend as K
 
 class TensorflowGPU(object):
 	time_callback = TimedCallback()
@@ -15,11 +14,8 @@ class TensorflowGPU(object):
 	@classmethod
 	def clear_all(cls):
 		""" Release unused memory resources. Force garbage collection """
-		K.clear_session()
-		K.get_session().close()
 		tf.compat.v1.reset_default_graph()
 		gc.collect()
-		K.set_session(tf.compat.v1.Session())
 		gc.collect()
 
 	@classmethod
