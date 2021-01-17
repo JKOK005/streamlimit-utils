@@ -20,7 +20,7 @@ class TensorflowGPU(object):
 
 	@classmethod
 	def train(cls, num_gpus, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
-		devices = tf.config.experimental.list_physical_devices('GPU')
+		devices = tf.config.experimental.list_physical_devices('XLA_GPU')
 		devices_names = [d.name.split("e:")[1] for d in devices]
 
 		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
