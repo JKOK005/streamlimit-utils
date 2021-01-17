@@ -1,5 +1,3 @@
-from experiments.max_throughput.spark_horovod.SparkHorovod import *
-from experiments.max_throughput.tensorflow_gpu.TensorflowGPU import *
 import argparse
 import logging
 import math
@@ -46,12 +44,15 @@ if __name__ == "__main__":
 
   training_cls        = None
   if EXPERIMENT_TYPE == 1:
+    from experiments.max_throughput.tensorflow_gpu.TensorflowGPU import *
     training_cls      = TensorflowGPU
+
   elif EXPERIMENT_TYPE == 3:
     # This option is disabled as Running on Databricks incurs the error: Missing master URL. 
     # Probably due to the way Spark is set up in Databricks
     # Workaround is to run the script in Databrick's notebook instead of executing this main script
     # training_cls      = SparkHorovodEntry
+    from experiments.max_throughput.spark_horovod.SparkHorovod import *
     training_cls      = None
 
   for _ in range(REPETITIONS):
