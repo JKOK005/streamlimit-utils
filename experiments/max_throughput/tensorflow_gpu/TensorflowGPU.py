@@ -20,8 +20,9 @@ class TensorflowGPU(object):
 
 	@classmethod
 	def train(cls, num_gpus, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
-		devices = tf.config.experimental.list_physical_devices('XLA_GPU')
-		devices_names = [d.name.split("e:")[1].replace("XLA_", "") for d in devices]
+		devices = tf.config.experimental.list_physical_devices('GPU')
+		devices_names = [d.name.split("e:")[1] for d in devices]
+		logging.info("Detected devices: {0}".format(devices_names))
 
 		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
 		train_labels = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
@@ -31,12 +32,12 @@ class TensorflowGPU(object):
 		val_labels   = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
 		val_gen      = DataGenerator.generate(img_gen = val_imgs, label_gen = val_labels)
 
-		# strategy 	 = tf.distribute.MirroredStrategy(devices=devices_names[:num_gpus])
+		strategy 	 = tf.distribute.MirroredStrategy(devices=devices_names[:num_gpus])
 
-		# with strategy.scope():
-		model = Lenet5.get_model()
-		opt = keras.optimizers.Adadelta()
-		model.compile(optimizer = opt, loss = "mean_squared_error", metrics = ['accuracy'])
+		with strategy.scope():
+			model = Lenet5.get_model()
+			opt = keras.optimizers.Adadelta()
+			model.compile(optimizer = opt, loss = "mean_squared_error", metrics = ['accuracy'])
 
 		model.fit(
 			x 				 = train_gen,
