@@ -5,11 +5,11 @@ slas = [1, 5, 10, 20]
 cores = [1, 2, 4, 8, 16, 32, 64]
 batch_start = [2200, 2200, 4000, 6500, 10000, 17500, 18000]
 RATIO = 0.1
-EPOCH = 100
+EPOCH = 10
 
-core = int(input("core:"))
-sla = int(input("sla:"))
-batch_size = int(input("batch_size:"))
+core = 6
+sla = 1
+batch_size = 20000
 
 results_file = open("results{0}_{1}".format(core, sla), "w")
 write = csv.writer(results_file)

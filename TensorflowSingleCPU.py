@@ -19,6 +19,7 @@ class TensorflowSingleCPU(object):
         # device setup
         tf.config.threading.set_intra_op_parallelism_threads(num_thread)
         tf.config.threading.set_inter_op_parallelism_threads(num_thread)
+        tf.config.device_count={'CPU':num_thread}
 
         # data prep
         train_imgs = ArrGenerator(img_size=np.array([num_training, 32, 32, 3]), gen_cls=RandomArrCreator)
@@ -41,7 +42,8 @@ class TensorflowSingleCPU(object):
             epochs=num_epoch,
             validation_data=val_gen,
             validation_steps=1,
-            callbacks=[cls.time_callback]
+            callbacks=[cls.time_callback],
+
         )
 
     @classmethod
