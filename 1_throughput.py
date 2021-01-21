@@ -9,7 +9,7 @@ EPOCH = 10
 
 core = 6
 sla = 1
-batch_size = 20000
+batch_size = 50000
 
 results_file = open("results{0}_{1}".format(core, sla), "w")
 write = csv.writer(results_file)

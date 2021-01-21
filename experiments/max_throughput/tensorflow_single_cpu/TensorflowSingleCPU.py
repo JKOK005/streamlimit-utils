@@ -58,3 +58,8 @@ class TensorflowSingleCPU(object):
         epoch_timings = cls.time_callback.get_epoch_times()
         cls.logger.info("Epoch timings {0}".format(epoch_timings))
         return np.average(epoch_timings[1:])
+
+    @classmethod
+    def main(cls, units, **kwargs):
+        cls.train(num_threads=units, **kwargs)
+        cls.clear_all()
