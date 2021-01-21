@@ -5,6 +5,7 @@ from models.tensorflow.Lenet5 import Lenet5
 from stream_utils.ImageGenerator import *
 from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
+import gc
 import logging
 import numpy as np
 import tensorflow as tf
@@ -15,7 +16,9 @@ class TensorflowSingleCPU(object):
 
     @classmethod
     def clear_all(cls):
-        pass
+        tf.compat.v1.reset_default_graph()
+        gc.collect()
+        gc.collect()
 
     @classmethod
     def train(cls, num_threads, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
