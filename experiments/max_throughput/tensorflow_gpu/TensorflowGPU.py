@@ -32,6 +32,7 @@ class TensorflowGPU(object):
 		val_labels   = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
 		val_gen      = DataGenerator.generate(img_gen = val_imgs, label_gen = val_labels)
 
+		logging.info("USing devices: {0}".format(devices_names[:num_gpus]))
 		strategy 	 = tf.distribute.MirroredStrategy(devices=devices_names[:num_gpus])
 
 		with strategy.scope():
