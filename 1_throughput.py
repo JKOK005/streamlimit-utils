@@ -11,8 +11,8 @@ core = int(input("core:"))
 sla = int(input("sla:"))
 batch_size = int(input("batch_size:"))
 
-# results_file = open("results{0}".format(core), "w")
-# write = csv.writer(results_file)
+results_file = open("results{0}_{1}".format(core, sla), "w")
+write = csv.writer(results_file)
 
 # for sla in slas:
 #     batch_size_for_one_sec = batch_start[cores.index(core)]
