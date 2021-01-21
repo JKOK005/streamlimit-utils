@@ -143,3 +143,6 @@ data/
 # vscode
 .vscode
 .DS_Store
+
+# results file
+CPU_results/
