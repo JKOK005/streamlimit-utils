@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append('/Users/tywan/Documents/dev/streamlimit-utils')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
 from models.tensorflow.Lenet5 import Lenet5
 from stream_utils.ImageGenerator import *
