@@ -1,4 +1,5 @@
 from models.tensorflow.Lenet5 import Lenet5
+from models.tensorflow.Resnets import Resnet
 from stream_utils.ImageGenerator import *
 from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
@@ -24,11 +25,11 @@ class TensorflowGPU(object):
 		devices_names = [d.name.split("e:")[1] for d in devices]
 		logging.info("Detected devices: {0}".format(devices_names))
 
-		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
+		train_imgs   = ArrGenerator(img_size = np.array([training_rows, 224, 224, 3]), gen_cls = RandomArrCreator)
 		train_labels = ArrGenerator(img_size = np.array([training_rows, 10]), gen_cls = RandomArrCreator)
 		train_gen    = DataGenerator.generate(img_gen = train_imgs, label_gen = train_labels)
 
-		val_imgs     = ArrGenerator(img_size = np.array([val_rows, 32, 32, 3]), gen_cls = RandomArrCreator)
+		val_imgs     = ArrGenerator(img_size = np.array([val_rows, 224, 224, 3]), gen_cls = RandomArrCreator)
 		val_labels   = ArrGenerator(img_size = np.array([val_rows, 10]), gen_cls = RandomArrCreator)
 		val_gen      = DataGenerator.generate(img_gen = val_imgs, label_gen = val_labels)
 
@@ -36,7 +37,7 @@ class TensorflowGPU(object):
 		strategy 	 = tf.distribute.MirroredStrategy(devices=devices_names[:num_gpus])
 
 		with strategy.scope():
-			model = Lenet5.get_model()
+			model = Resnet.resnet152()
 			opt = keras.optimizers.Adadelta()
 			model.compile(optimizer = opt, loss = "mean_squared_error", metrics = ['accuracy'])
 
