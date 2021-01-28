@@ -3,13 +3,15 @@ import logging
 import math
 import os
 import pandas as pd
+import sys
 import time
 
 logging.getLogger().setLevel(logging.INFO)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Experiment 1: Max throughput')
-  parser.add_argument('--experiment_type', type=int, choices=[1], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
+  parser.add_argument('--experiment_type', type=int, choices=[1, 2], nargs='?', default=1, help='1 - TF-GPU, 2 - TF-CPU, 3 - Spark-Horovod')
   parser.add_argument('--rows_min', type=int, nargs='?', default=1, help='Minimum data size per epoch')
   parser.add_argument('--rows_max', type=int, nargs='?', default=8, help='Maximum data size per epoch')
   parser.add_argument('--rows_inc', type=int, nargs='?', default=1, help='Data size increment')
@@ -46,6 +48,10 @@ if __name__ == "__main__":
   if EXPERIMENT_TYPE == 1:
     from experiments.max_throughput.tensorflow_gpu.TensorflowGPU import *
     training_cls      = TensorflowGPU
+
+  elif EXPERIMENT_TYPE == 2:
+    from experiments.max_throughput.tensorflow_single_cpu.TensorflowSingleCPU import *
+    training_cls      = TensorflowSingleCPU
 
   elif EXPERIMENT_TYPE == 3:
     # This option is disabled as Running on Databricks incurs the error: Missing master URL. 

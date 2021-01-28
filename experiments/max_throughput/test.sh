@@ -1,0 +1,1 @@
+python3 main.py --experiment_type 2
