@@ -1,5 +1,5 @@
 import os, sys
-sys.path.append('/Users/tywan/Documents/dev/streamlimit-utils')
+# sys.path.append('/Users/tywan/Documents/dev/streamlimit-utils')
 
 from models.tensorflow.Resnets import Resnet
 from stream_utils.ImageGenerator import *
@@ -22,8 +22,8 @@ class Res152SingleCPU(object):
     
     @classmethod
     def train(cls, num_threads, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
-        tf.config.threading.get_inter_op_parallelism_threads(num_threads)
-        tf.config.threading.get_intra_op_parallelism_threads(num_threads)
+        tf.config.threading.set_inter_op_parallelism_threads(num_threads)
+        tf.config.threading.set_intra_op_parallelism_threads(num_threads)
         tf.config.device_count = {'CPU': num_threads}
 
         train_imgs = ArrGenerator(img_size=np.array([training_rows, 224, 224, 3]), gen_cls=RandomArrCreator)
@@ -35,8 +35,8 @@ class Res152SingleCPU(object):
         val_gen = DataGenerator.generate(img_gen=val_imgs, label_gen=val_labels)
         
         model = Resnet.resnet152()
-        opt = keras.optimizer.Adadelta()
-        model.compile(optimizer=opt, loss='mean_suqared_error', metrics=['accuracy'])
+        opt = keras.optimizers.Adadelta()
+        model.compile(optimizer=opt, loss='mean_squared_error', metrics=['accuracy'])
 
         model.fit(
             x = train_gen, 
