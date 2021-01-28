@@ -1,6 +1,7 @@
 import os, sys
 sys.path.append('/Users/tywan/Documents/dev/streamlimit-utils')
 
+from models.tensorflow.Resnets import Resnet
 from stream_utils.ImageGenerator import *
 from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
@@ -34,4 +35,4 @@ class Res152SingleCPU(object):
         val_gen = DataGenerator.generate(img_gen=val_imgs, label_gen=val_labels)
 
 
-        model = 
+        model = Resnet.
