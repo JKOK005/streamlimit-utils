@@ -57,7 +57,7 @@ class TensorflowSingleCPU(object):
     def get_avg_epoch_timing(cls, **kwargs):
         epoch_timings = cls.time_callback.get_epoch_times()
         cls.logger.info("Epoch timings {0}".format(epoch_timings))
-        return np.average(epoch_timings[1:])
+        return np.average(epoch_timings[5:])
 
     @classmethod
     def main(cls, units, **kwargs):
