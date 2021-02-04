@@ -23,7 +23,7 @@ class TensorflowSingleCPU(object):
     @classmethod
     def train(cls, num_threads, training_rows, training_steps_per_epoch, val_rows, val_steps_per_epoch, epochs, gen_workers):
         # device setup
-        tf.config.threading.set_inter_op_parallelism_threads(num_threads)
+        tf.config.threading.set_inter_op_parallelism_threads(8)
         tf.config.threading.set_intra_op_parallelism_threads(num_threads)
         tf.config.device_count = {'CPU': num_threads}
 
