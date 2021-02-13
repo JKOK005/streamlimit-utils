@@ -34,7 +34,7 @@ class Res152SingleCPU(object):
         val_labels = ArrGenerator(img_size=np.array([val_rows, 10]), gen_cls=RandomArrCreator)
         val_gen = DataGenerator.generate(img_gen=val_imgs, label_gen=val_labels)
         
-        model = Resnet.resnet152()
+        model = Resnet.resnet50()
         opt = keras.optimizers.Adadelta()
         model.compile(optimizer=opt, loss='mean_squared_error', metrics=['accuracy'])
 
