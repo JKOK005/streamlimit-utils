@@ -1,7 +1,9 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
 
+from datetime import datetime
 from models.tensorflow.Lenet5 import Lenet5
+from packaging import version
 from stream_utils.ImageGenerator import *
 from stream_utils.TimedCallback import TimedCallback
 from tensorflow import keras
@@ -9,6 +11,7 @@ import gc
 import logging
 import numpy as np
 import tensorflow as tf
+
 
 class TensorflowSingleCPU(object):
     time_callback = TimedCallback()
@@ -40,6 +43,12 @@ class TensorflowSingleCPU(object):
         opt = keras.optimizers.Adadelta()
         model.compile(optimizer=opt, loss='mean_squared_error', metrics=['accuracy'])
 
+        logs = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        tboard_callback = tf.keras.callbacks.TensorBoard(log_dir = logs,
+                                                 histogram_freq = 1,
+                                                 profile_batch = '500,520')
+
         model.fit(
             x=train_gen,
             steps_per_epoch=training_steps_per_epoch, 
@@ -49,7 +58,7 @@ class TensorflowSingleCPU(object):
             max_queue_size=20,
             workers = gen_workers,
             use_multiprocessing = True,
-            callbacks=[cls.time_callback]
+            callbacks=[cls.time_callback, tboard_callback]
         )
     @classmethod
     def get_images_per_epoch(cls, **kwargs):

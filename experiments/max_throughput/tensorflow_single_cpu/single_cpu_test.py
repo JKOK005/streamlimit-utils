@@ -8,9 +8,9 @@ train = TensorflowSingleCPU
 params = { 
     "units" : 32, 
     "training_rows" : 3686, 
-    "training_steps_per_epoch" : 15, 
+    "training_steps_per_epoch" : 10, 
     "val_rows" : 410, 
-    "val_steps_per_epoch" : 15,
+    "val_steps_per_epoch" : 10,
     "epochs" : 40, 
     "gen_workers" : 2
     }
