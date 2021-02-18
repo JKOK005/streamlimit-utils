@@ -3,15 +3,14 @@ from Res152SingleCPU import Res152SingleCPU
 import logging
 
 logging.getLogger().setLevel(logging.INFO)
-
-train = Res152SingleCPU
-# train = TensorflowSingleCPU
+#train = Res152SingleCPU
+train = TensorflowSingleCPU
 params = { 
-    "units" : 64, 
-    "training_rows" : 9, 
-    "training_steps_per_epoch" : 40, 
-    "val_rows" : 1, 
-    "val_steps_per_epoch" : 40, 
+    "units" : 32, 
+    "training_rows" : 3686, 
+    "training_steps_per_epoch" : 15, 
+    "val_rows" : 410, 
+    "val_steps_per_epoch" : 15,
     "epochs" : 40, 
     "gen_workers" : 2
     }
