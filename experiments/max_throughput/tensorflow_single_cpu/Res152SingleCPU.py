@@ -44,9 +44,9 @@ class Res152SingleCPU(object):
             epochs = epochs,
             validation_data = val_gen,
             validation_steps = val_steps_per_epoch,
-            max_queue_size = 20,
+            max_queue_size = 5,
             workers = gen_workers,
-            use_multiprocessing = True,
+            use_multiprocessing = False,
             callbacks = [cls.time_callback]
         )
 

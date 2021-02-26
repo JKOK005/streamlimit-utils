@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 from datetime import datetime
 from models.tensorflow.Lenet5 import Lenet5
 from packaging import version
