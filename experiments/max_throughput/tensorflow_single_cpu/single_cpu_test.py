@@ -6,12 +6,12 @@ import logging
 train = Res152SingleCPU
 # train = TensorflowSingleCPU
 params = { 
-    "units" : 32, 
-    "training_rows" : 115, 
+    "units" : 4, 
+    "training_rows" : 4, 
     "training_steps_per_epoch" : 1, 
-    "val_rows" : 13, 
+    "val_rows" : 1, 
     "val_steps_per_epoch" : 1,
-    "epochs" : 50, 
+    "epochs" : 40, 
     "gen_workers" : 1
     }
 train.main(**params)
